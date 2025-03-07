@@ -1,45 +1,65 @@
-import { PropsWithChildren, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { useState } from "react";
+import { StyleSheet, TouchableOpacity, useColorScheme, View, ViewStyle } from "react-native";
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import Animated, { LinearTransition } from "react-native-reanimated";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
+interface AppProps {
+  children?: React.ReactNode;
+  colapsibleContent?: React.ReactNode;
+  colapsiblePlaceholder?: React.ReactNode;
+  colapsibleStyle?: ViewStyle;
+  disabled?: boolean;
+  type?: "outline" | "default" | "dashed" | "shadow";
+  isLoading?: boolean;
+  onPress?: () => void;
+  size?: "xs" | "sm" | "md" | "lg";
+  icon?: keyof typeof Icon.glyphMap;
+  style?: ViewStyle;
+}
+import { Colors } from "@/constants/Colors";
+
+const Component: React.FC<AppProps> = ({
+  children,
+  colapsibleContent,
+  colapsiblePlaceholder = (
+    <View
+      style={{
+        borderTopWidth: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        // borderColor: Colors.border,
+      }}
+    >
+      <Icon name="chevron-down" size={18} weight="medium" />
+    </View>
+  ),
+  style,
+  colapsibleStyle,
+  disabled = false,
+  type = "default",
+  isLoading = false,
+  onPress,
+  size = "md",
+  icon,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const theme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme();
 
   return (
-    <ThemedView>
-      <TouchableOpacity
-        style={styles.heading}
-        onPress={() => setIsOpen((value) => !value)}
-        activeOpacity={0.8}>
-        <IconSymbol
-          name="chevron.right"
-          size={18}
-          weight="medium"
-          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
-          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
-        />
-
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
+    <Animated.View layout={LinearTransition} style={style}>
+      {children}
+      <TouchableOpacity onPress={() => setIsOpen((value) => !value)}>
+        {isOpen ? (
+          <Animated.View style={colapsibleStyle} layout={LinearTransition}>
+            {colapsibleContent}
+          </Animated.View>
+        ) : (
+          colapsiblePlaceholder
+        )}
       </TouchableOpacity>
-      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
-    </ThemedView>
+    </Animated.View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  content: {
-    marginTop: 6,
-    marginLeft: 24,
-  },
-});
+export default Component;

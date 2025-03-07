@@ -1,39 +1,139 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+// import { useFonts } from "expo-font";
+// import * as SplashScreen from "expo-splash-screen";
+// import { useEffect } from "react";
+// import {
+//   Roboto_400Regular,
+//   Roboto_500Medium,
+//   Roboto_700Bold,
+//   Roboto_900Black,
+//   Roboto_300Light,
+//   Roboto_100Thin,
+//   Roboto_400Regular_Italic,
+//   Roboto_500Medium_Italic,
+//   Roboto_700Bold_Italic,
+//   Roboto_900Black_Italic,
+//   Roboto_300Light_Italic,
+//   Roboto_100Thin_Italic,
+// } from "@expo-google-fonts/roboto";
+// export { ErrorBoundary } from "expo-router";
+// import Toast from "react-native-toast-message";
+// import { Slot, Stack } from "expo-router";
+// import { SessionProvider } from "@/context/auth";
+// import { corner, spacing } from "@/constants/measure";
+// import { StyleSheet } from "react-native";
+// import dayjs from "dayjs";
+// import React from "react";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// const Layout = () => {
+//   const [fontsLoaded] = useFonts({
+//     Roboto_400Regular,
+//     Roboto_500Medium,
+//     Roboto_700Bold,
+//     Roboto_900Black,
+//     Roboto_300Light,
+//     Roboto_100Thin,
+//     Roboto_400Regular_Italic,
+//     Roboto_500Medium_Italic,
+//     Roboto_700Bold_Italic,
+//     Roboto_900Black_Italic,
+//     Roboto_300Light_Italic,
+//     Roboto_100Thin_Italic,
+//   });
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+//   useEffect(() => {
+//     if (fontsLoaded) {
+//       SplashScreen.hideAsync();
+//     }
+//   }, [fontsLoaded]);
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+//   if (!fontsLoaded) {
+//     return null;
+//   }
+
+//   return (
+//     <>
+//       <Stack screenOptions={{ headerShown: false, statusBarHidden: true }}>
+//         <Stack.Screen name="index" />
+//       </Stack>
+//       <Toast position="bottom" visibilityTime={2000} />
+//     </>
+//   );
+// };
+
+// export default Layout;
+
+import { useFonts } from "expo-font";
+import { router, SplashScreen, Stack } from "expo-router";
+import {
+  Roboto_400Regular,
+  Roboto_500Medium,
+  Roboto_700Bold,
+  Roboto_900Black,
+  Roboto_300Light,
+  Roboto_100Thin,
+  Roboto_400Regular_Italic,
+  Roboto_500Medium_Italic,
+  Roboto_700Bold_Italic,
+  Roboto_900Black_Italic,
+  Roboto_300Light_Italic,
+  Roboto_100Thin_Italic,
+} from "@expo-google-fonts/roboto";
+import React, { useEffect } from "react";
+import Toast from "react-native-toast-message";
+import { auth } from "@/firebaseConfig";
+import { onAuthStateChanged } from "@firebase/auth";
+import dayjs from "dayjs";
+require("dayjs/locale/id");
+dayjs.locale("id");
+
+const Layout = () => {
+  const [fontsLoaded] = useFonts({
+    Roboto_400Regular,
+    Roboto_500Medium,
+    Roboto_700Bold,
+    Roboto_900Black,
+    Roboto_300Light,
+    Roboto_100Thin,
+    Roboto_400Regular_Italic,
+    Roboto_500Medium_Italic,
+    Roboto_700Bold_Italic,
+    Roboto_900Black_Italic,
+    Roboto_300Light_Italic,
+    Roboto_100Thin_Italic,
   });
 
   useEffect(() => {
-    if (loaded) {
+    dayjs.locale("id");
+
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User logged in:", user.uid);
+        router.replace("/tabs");
+      } else {
+        console.log("No user logged in, redirecting to login.");
+        router.replace("/login");
+      }
+    });
 
-  if (!loaded) {
+    return () => unsubscribe();
+  }, [fontsLoaded]);
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="autentikasi/login" />
+        <Stack.Screen name="autentikasi/register" />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <Toast position="bottom" visibilityTime={2000} />
+    </>
   );
-}
+};
+
+export default Layout;
